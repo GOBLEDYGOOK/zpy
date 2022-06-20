@@ -206,7 +206,7 @@ def save_and_revert(_func):
             raise e
         finally:
             log.info("Reverting sim to previous savepoint.")
-            bpy.ops.wm.revert_mainfile()
+            bpy.ops.wm.revert_mainfile(filepath="save.blend")
 
     return wrapped_func
 
