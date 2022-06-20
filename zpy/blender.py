@@ -5,6 +5,7 @@ import inspect
 import logging
 import random
 import time
+import os
 from functools import wraps
 from pathlib import Path
 from typing import Dict, List, Union
@@ -198,7 +199,14 @@ def save_and_revert(_func):
     @wraps(_func)
     def wrapped_func(*args, **kwargs) -> None:
         log.info("Saving the sim.")
-        bpy.ops.wm.save_mainfile(filepath="save.blend")
+        if os.name == "nt":
+            blend_file_path = os.path.abspath(__file__).split("\\")
+            blend_file_location = "\\".join(blend_file_path[:-2]) + "\\"
+        else:
+            blend_file_path = os.path.abspath(__file__).split("/")
+            blend_file_location = "/".join(blend_file_path[:-2]) + "/"
+        
+        bpy.ops.wm.save_mainfile(filepath=blend_file_location + "untitled.blend")
         try:
             _func(*args, **kwargs)
         except Exception as e:
@@ -206,7 +214,7 @@ def save_and_revert(_func):
             raise e
         finally:
             log.info("Reverting sim to previous savepoint.")
-            bpy.ops.wm.revert_mainfile(filepath="save.blend")
+            bpy.ops.wm.revert_mainfile(filepath=blend_file_location + "untitled.blend")
 
     return wrapped_func
 
