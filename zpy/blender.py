@@ -198,7 +198,7 @@ def save_and_revert(_func):
     @wraps(_func)
     def wrapped_func(*args, **kwargs) -> None:
         log.info("Saving the sim.")
-        bpy.ops.wm.save_mainfile()
+        bpy.ops.wm.save_mainfile(filepath="save.blend")
         try:
             _func(*args, **kwargs)
         except Exception as e:
