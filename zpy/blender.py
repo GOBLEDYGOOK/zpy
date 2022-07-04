@@ -199,14 +199,15 @@ def save_and_revert(_func):
     @wraps(_func)
     def wrapped_func(*args, **kwargs) -> None:
         log.info("Saving the sim.")
-        if os.name == "nt":
-            blend_file_path = os.path.abspath(__file__).split("\\")
-            blend_file_location = "\\".join(blend_file_path[:-2]) + "\\"
-        else:
-            blend_file_path = os.path.abspath(__file__).split("/")
-            blend_file_location = "/".join(blend_file_path[:-2]) + "/"
-        
-        bpy.ops.wm.save_mainfile(filepath=blend_file_location + "untitled.blend")
+
+        try:
+            bpy.ops.wm.save_mainfile()
+        except RuntimeError:
+            blend_file_location = os.path.dirname(os.path.abspath(__file__))
+            bpy.ops.wm.save_mainfile(
+                filepath=os.path.join(blend_file_location, "untitled.blend")
+            )
+
         try:
             _func(*args, **kwargs)
         except Exception as e:
