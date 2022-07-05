@@ -257,7 +257,6 @@ def _mute_aov_file_output_node(style: str, mute: bool = True):
 @gin.configurable
 def default_render_settings(
     samples: int = 96,
-    tile_size: int = 48,
     spatial_splits: bool = False,
     is_aggressive: bool = False,
 ) -> None:
@@ -265,7 +264,6 @@ def default_render_settings(
 
     Args:
         samples (int, optional): Number of Cycles samples per frame
-        tile_size (int, optional): Rendering tile size in pixel dimensions
         spatial_splits (bool, optional): Toogle for BVH split acceleration
         is_aggressive (bool, optional): Toogles aggressive render time reduction settings
     """
@@ -307,8 +305,7 @@ def default_render_settings(
     scene.display.shading.light = "STUDIO"
     scene.display.shading.show_specular_highlight = True
 
-    scene.render.tile_x = tile_size
-    scene.render.tile_y = tile_size
+    scene.cycles.use_auto_tile = False
     scene.cycles.debug_use_spatial_splits = spatial_splits
     scene.render.use_persistent_data = True
 
