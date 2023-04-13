@@ -146,6 +146,7 @@ def render(
     width: int = 640,
     height: int = 480,
     hsv: Tuple[float] = None,
+    file_format: str = "PNG",
 ):
     """Render images using AOV nodes."""
     scene = zpy.blender.verify_blender_scene()
@@ -154,7 +155,10 @@ def render(
     scene.cycles.resolution_x = width
     scene.cycles.resolution_y = height
     scene.render.resolution_percentage = 100
-    scene.render.image_settings.file_format = "PNG"
+    scene.render.image_settings.file_format = file_format
+    
+    if file_format == "JPEG":
+        scene.render.image_settings.quality = 95
 
     # HACK: Prevents adding frame number to filename
     scene.frame_end = scene.frame_current
@@ -180,7 +184,7 @@ def render(
                 output_node = make_aov_file_output_node(style=style)
             output_node.base_path = str(output_path.parent)
             output_node.file_slots[0].path = str(output_path.name)
-            output_node.format.file_format = "PNG"
+            output_node.format.file_format = file_format
             output_node.format.color_mode = "RGB"
             if style in ["rgb"]:
                 output_node.format.color_depth = "8"
