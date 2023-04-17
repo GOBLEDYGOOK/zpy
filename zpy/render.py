@@ -5,7 +5,7 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Union, Tuple
+from typing import Dict, Union, Tuple
 
 import bpy
 import gin
@@ -146,18 +146,21 @@ def render(
     width: int = 640,
     height: int = 480,
     hsv: Tuple[float] = None,
-    file_format: str = "PNG",
+    file_formats: Dict[str, str] = None,
 ):
     """Render images using AOV nodes."""
+    if file_formats is None:
+        file_formats = {}
+    
     scene = zpy.blender.verify_blender_scene()
     scene.render.resolution_x = width
     scene.render.resolution_y = height
     scene.cycles.resolution_x = width
     scene.cycles.resolution_y = height
     scene.render.resolution_percentage = 100
-    scene.render.image_settings.file_format = file_format
+    scene.render.image_settings.file_format = file_formats.get("rgb", "PNG")
     
-    if file_format == "JPEG":
+    if file_formats.get("rgb", "PNG") == "JPEG":
         scene.render.image_settings.quality = 95
 
     # HACK: Prevents adding frame number to filename
@@ -184,7 +187,7 @@ def render(
                 output_node = make_aov_file_output_node(style=style)
             output_node.base_path = str(output_path.parent)
             output_node.file_slots[0].path = str(output_path.name)
-            output_node.format.file_format = file_format
+            output_node.format.file_format = file_formats.get(style, "PNG")
             output_node.format.color_mode = "RGB"
             if style in ["rgb"]:
                 output_node.format.color_depth = "8"
