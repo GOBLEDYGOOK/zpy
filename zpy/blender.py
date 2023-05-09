@@ -64,11 +64,6 @@ def set_seed(
     Args:
         seed (int, optional): Integer seed. Defaults to 0.
     """
-    if log.getEffectiveLevel() == logging.DEBUG:
-        # When debugging you want to run into errors related
-        # to specific permutations of the random variables, so
-        # you need to vary the seed to run into them.
-        seed = random.randint(1, 100)
     log.info(f"Setting random seed to {seed}")
     random.seed(seed)
     np.random.seed(seed)
