@@ -130,12 +130,12 @@ def random_color(output_style: str = "frgb") -> Union[Tuple[float, int, str], st
     global RANDOM_COLOR_IDX, COLORS
     if COLORS is None:
         reset()
+    if RANDOM_COLOR_IDX >= len(COLORS):
+        raise Exception("Ran out of unique colors!")
     _name = COLORS[RANDOM_COLOR_IDX]["name"]
     _hex = COLORS[RANDOM_COLOR_IDX]["hex"]
     # Update global color idx
     RANDOM_COLOR_IDX += 1
-    if RANDOM_COLOR_IDX > len(COLORS):
-        log.error("Ran out of unique colors!")
     log.debug(f"Random color chosen is {_name} - {_hex} - {hex_to_frgb(_hex)}")
     return _output_style(_name, _hex, output_style=output_style)
 
