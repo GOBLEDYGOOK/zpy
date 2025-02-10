@@ -5,7 +5,7 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import Union, Tuple
+from typing import Dict, Union, Tuple
 
 import bpy
 import gin
@@ -146,15 +146,22 @@ def render(
     width: int = 640,
     height: int = 480,
     hsv: Tuple[float] = None,
+    file_formats: Dict[str, str] = None,
 ):
     """Render images using AOV nodes."""
+    if file_formats is None:
+        file_formats = {}
+    
     scene = zpy.blender.verify_blender_scene()
     scene.render.resolution_x = width
     scene.render.resolution_y = height
     scene.cycles.resolution_x = width
     scene.cycles.resolution_y = height
     scene.render.resolution_percentage = 100
-    scene.render.image_settings.file_format = "PNG"
+    scene.render.image_settings.file_format = file_formats.get("rgb", "PNG")
+    
+    if file_formats.get("rgb", "PNG") == "JPEG":
+        scene.render.image_settings.quality = 95
 
     # HACK: Prevents adding frame number to filename
     scene.frame_end = scene.frame_current
@@ -180,7 +187,7 @@ def render(
                 output_node = make_aov_file_output_node(style=style)
             output_node.base_path = str(output_path.parent)
             output_node.file_slots[0].path = str(output_path.name)
-            output_node.format.file_format = "PNG"
+            output_node.format.file_format = file_formats.get(style, "PNG")
             output_node.format.color_mode = "RGB"
             if style in ["rgb"]:
                 output_node.format.color_depth = "8"
@@ -257,7 +264,6 @@ def _mute_aov_file_output_node(style: str, mute: bool = True):
 @gin.configurable
 def default_render_settings(
     samples: int = 96,
-    tile_size: int = 48,
     spatial_splits: bool = False,
     is_aggressive: bool = False,
 ) -> None:
@@ -265,7 +271,6 @@ def default_render_settings(
 
     Args:
         samples (int, optional): Number of Cycles samples per frame
-        tile_size (int, optional): Rendering tile size in pixel dimensions
         spatial_splits (bool, optional): Toogle for BVH split acceleration
         is_aggressive (bool, optional): Toogles aggressive render time reduction settings
     """
@@ -307,8 +312,7 @@ def default_render_settings(
     scene.display.shading.light = "STUDIO"
     scene.display.shading.show_specular_highlight = True
 
-    scene.render.tile_x = tile_size
-    scene.render.tile_y = tile_size
+    scene.cycles.use_auto_tile = False
     scene.cycles.debug_use_spatial_splits = spatial_splits
     scene.render.use_persistent_data = True
 

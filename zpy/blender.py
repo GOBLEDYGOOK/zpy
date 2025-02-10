@@ -5,6 +5,7 @@ import inspect
 import logging
 import random
 import time
+import os
 from functools import wraps
 from pathlib import Path
 from typing import Dict, List, Union
@@ -63,11 +64,6 @@ def set_seed(
     Args:
         seed (int, optional): Integer seed. Defaults to 0.
     """
-    if log.getEffectiveLevel() == logging.DEBUG:
-        # When debugging you want to run into errors related
-        # to specific permutations of the random variables, so
-        # you need to vary the seed to run into them.
-        seed = random.randint(1, 100)
     log.info(f"Setting random seed to {seed}")
     random.seed(seed)
     np.random.seed(seed)
@@ -198,7 +194,15 @@ def save_and_revert(_func):
     @wraps(_func)
     def wrapped_func(*args, **kwargs) -> None:
         log.info("Saving the sim.")
-        bpy.ops.wm.save_mainfile()
+
+        try:
+            bpy.ops.wm.save_mainfile()
+        except RuntimeError:
+            blend_file_location = os.path.dirname(os.path.abspath(__file__))
+            bpy.ops.wm.save_mainfile(
+                filepath=os.path.join(blend_file_location, "untitled.blend")
+            )
+
         try:
             _func(*args, **kwargs)
         except Exception as e:
