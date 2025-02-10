@@ -283,8 +283,6 @@ def segment(
         as_category (bool, optional): Segment as a category, if false will segment as instance. Defaults to False.
         as_single (bool, optional): Segment all child objects as well. Defaults to False.
     """
-    if "use_sculpt_vertex_colors" in dir(bpy.context.preferences.experimental):
-        bpy.context.preferences.experimental.use_sculpt_vertex_colors = True
     obj = verify(obj)
     if color is None:
         color = zpy.color.random_color(output_style="frgb")
@@ -328,20 +326,18 @@ def populate_vertex_colors(
     if not obj.type == "MESH":
         log.warning(f"Object {obj.name} is not a mesh, has no vertices.")
         return
-    # TODO: Is this select needed?
-    # select(obj)
     # Remove any existing vertex color data
-    if len(obj.data.sculpt_vertex_colors):
-        for vcol in obj.data.sculpt_vertex_colors.keys():
+    if len(obj.data.vertex_colors):
+        for vcol in obj.data.vertex_colors.keys():
             if seg_type in vcol:
-                obj.data.sculpt_vertex_colors.remove(
-                    obj.data.sculpt_vertex_colors[seg_type]
+                obj.data.vertex_colors.remove(
+                    obj.data.vertex_colors[seg_type]
                 )
     # Add new vertex color data
-    obj.data.sculpt_vertex_colors.new(name=seg_type)
+    obj.data.vertex_colors.new(name=seg_type)
     # Iterate through each vertex in the mesh
     for i, _ in enumerate(obj.data.vertices):
-        obj.data.sculpt_vertex_colors[seg_type].data[i].color = color_rgba
+        obj.data.vertex_colors[seg_type].data[i].color = color_rgba
 
 
 def random_position_within_constraints(
